@@ -1,0 +1,56 @@
+I. LICENSE
+
+Copyright (C) 2015 Mohammad Javad Dousti, Majid Ghasemi-Gol, Mahdi Nazemi and Massoud Pedram, SPORT lab, University of Southern California.
+All rights reserved.
+
+Permission is hereby granted, without written agreement and without license or royalty fees, to use, copy, and modify, this software and its documentation for any non-commercial purpose, provided that the above copyright notice and the following paragraphs appear in all copies of this software, whether in binary form or not. This software must not be distributed in any form outside Intel Corporation. Commercial use of this software requires written agreement which must be obtained the copyright holders.
+
+IN NO EVENT SHALL THE AUTHORS OR THE UNIVERSITY OF SOUTHERN CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THEY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+THE AUTHORS AND THE UNIVERSITY OF SOUTHERN CALIFORNIA SPECIFICALLY DISCLAIM ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE AUTHORS HAVE NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+If you use this software or a modified version of it, either of the following papers must be cited:
+
+- M. J. Dousti, M. Ghasemi-Gol, M. Nazemi, and M. Pedram, “ThermTap: An Online Power Analyzer and Thermal Simulator for Android Devices,” in Proc. of International Symposium on Low Power Electronics and Design (ISLPED), Jul. 2015.
+- Q. Xie, M. J. Dousti, and M. Pedram, “Therminator: A Thermal Simulator for Smartphones Producing Accurate Chip and Skin Temperature Maps,” in Proc. of the Int’l Symposium on Low Power Electronics and Design (ISLPED), Aug. 2014.
+
+
+II. EXCEPTIONS
+
+Apache Commons Collections
+--------------------------
+Apache Commons Collections is licensed under the Apache License V2.0. Please refer to the following link to obtain this license.
+
+http://www.apache.org/licenses
+
+dom4j
+-----
+dom4j is licensed under a BSD style license. Please refer to the following link to obtain this license.
+
+http://dom4j.sourceforge.net/dom4j-1.6.1/license.html
+
+
+inotify-cxx
+-----------
+inotify-cxx is licensed under the GNU General Public License, version 2. Please refer to the following link to obtain this license.
+
+http://inotify.aiken.cz/licenses/LICENSE-GPL
+
+JFreeChart
+----------
+JFreeChart is licensed under the GNU Lesser General Public Licence. Please refer to the following link to obtain this license.
+
+http://www.jfree.org/lgpl.php
+
+Jzy3d
+-----
+Jzy3d is licensed under the following terms.
+
+https://github.com/freddy33/jzy3d/blob/master/license.txt
+
+
+pugixml
+-------
+pugixml is license under the MIT License. Please refer to the following link to obtain this license.
+
+http://pugixml.org/license.html

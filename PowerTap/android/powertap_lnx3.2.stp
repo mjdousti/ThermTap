@@ -1,0 +1,235 @@
+//
+//
+// Copyright (C) 2015 Mohammad Javad Dousti, Majid Ghasemi-Gol, Mahdi Nazemi, 
+//   and Massoud Pedram, SPORT lab, University of Southern California. All rights reserved.
+// 
+// Please refer to the LICENSE file for terms of use.
+//
+//	This version is suitable for linux kernel 3.3 and above
+
+%{
+#include <linux/sched.h>
+#include <linux/cpumask.h>
+#include <linux/percpu.h>
+#include <linux/kernel_stat.h>
+
+%}
+
+function get_cpustat_entry:long(subfield:long, cpu_id:long) %{ /* pure */
+	static int last_usr = 0;
+	struct cpu_usage_stat *cpustat = &kstat_cpu(STAP_ARG_cpu_id).cpustat;
+
+	switch (STAP_ARG_subfield) {
+		case 0:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->idle);
+			break;		
+		case 1:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->user);
+			break;
+		case 2:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->system);
+			break;
+/*		case 3:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->nice);
+			break;
+		case 4:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->softirq);
+			break;
+		case 5:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->irq);
+			break;
+		case 6:
+			STAP_RETVALUE = cputime_to_usecs(cpustat->iowait);
+			break;
+*/
+	}
+%}
+
+/*
+ * End of code by DDuval
+*/
+global read_usage
+global write_usage
+global context_switch_count [4]
+global prev_idle_time
+global prev_sys_time
+global prev_user_time
+global wifiCounter = 0
+global lastpid = -1;
+
+probe begin
+{
+	printf("Initializing systemtap script...\n")
+	cpu_count = 4
+	for (i=0;i<cpu_count; i++){
+		context_switch_count[i] = 0
+	
+		prev_idle_time[i] = get_cpustat_entry(0, i)
+		prev_user_time[i] = get_cpustat_entry(1, i)
+		prev_sys_time[i] = get_cpustat_entry(2, i)
+	}
+	
+	printf("Test probing started...\n")
+}
+
+//----------------------probing context switch----------------------
+probe scheduler.cpu_off{
+	pid = $prev->pid
+	if (pid!=0){	//a real context "switch" happens
+        current_cpu = cpu()
+		context_switch_count[cpu()] += 1
+		
+		p_name = task_execname(task_prev)
+        tgid = $prev->tgid
+		uid = $prev->cred->uid
+
+		idle_time = get_cpustat_entry(0, current_cpu) - prev_idle_time[current_cpu]
+		user_time = get_cpustat_entry(1, current_cpu) - prev_user_time[current_cpu]
+		system_time = get_cpustat_entry(2, current_cpu) - prev_sys_time[current_cpu]
+
+		if (user_time!=0 || system_time!=0){
+			prev_idle_time[current_cpu] = get_cpustat_entry(0, current_cpu)
+			prev_user_time[current_cpu] = get_cpustat_entry(1, current_cpu)
+			prev_sys_time[current_cpu] = get_cpustat_entry(2, current_cpu)
+
+			ftrace(sprintf ("CPUCNTX: %d %d %d %d %d %d %d %s", pid, tgid, uid, current_cpu, idle_time, user_time, system_time, p_name))
+		}
+    }
+}
+
+
+
+//------------- probing send and receive in network -------------
+probe netdev.hard_transmit {
+	ftrace(sprintf("NETWORK: %d %d %d false false %d %s", pid(), gid(), uid(), truesize, dev_name))
+}
+
+probe netdev.rx {
+	wifiCounter += 1;
+	ftrace(sprintf("NETWORK: %d %d %d false true %d %s %d", pid(), gid(), uid(), $skb->truesize, dev_name, wifiCounter))
+}
+
+probe netdev.hard_transmit.return {
+	ftrace(sprintf("NETWORK: %d %d %d true false %d %s", pid(), gid(), uid(), truesize, dev_name))
+}
+
+probe netdev.rx.return {
+	ftrace(sprintf("NETWORK: %d %d %d true true %d %s", pid(), gid(), uid(), $skb->truesize, dev_name))
+}
+
+//--------------------- CPU Freq transition ---------------------
+probe kernel.function("cpufreq_notify_transition").return{
+	ftrace(sprintf ("CPUFREQ: %d %d", $freqs->cpu, $freqs->new))
+}
+
+//---------------------- CPU Disabled -------------------------
+probe kernel.function("__cpu_disable"){
+    ftrace(sprintf("CPUDISABLED: %d",cpu()))
+}
+
+
+//--------------------------------------------
+
+//------------------- probing disk activity------------------------
+
+probe vfs.read{
+	if($count > 1000){
+		if(execname()!="daemonsu" && execname() != "su" && execname() != "adbd"){ 
+			read_usage[pid(), uid(), gid(), execname()] += $count;
+			if(read_usage[pid(), uid(), gid(), execname()] > 81920){
+				ftrace(sprintf("DISK: %d %d %d false false %d %s", pid(), gid(), uid(), read_usage[pid(), uid(), gid(), execname()], execname()))
+			}
+		}
+	}
+}
+
+probe vfs.write {
+	if($count > 1000){
+		if(execname()!="daemonsu" && execname() != "su" && execname() != "adbd"){
+	        write_usage[pid(), uid(), gid(), execname()] += $count;
+    	    if(write_usage[pid(), uid(), gid(), execname()] > 81920){
+        	    ftrace(sprintf("DISK: %d %d %d false true %d %s", pid(), gid(), uid(), write_usage[pid(), uid(), gid(), execname()], execname()))
+          	}
+		}
+	}
+}
+
+probe vfs.read.return{
+	if($return > 1000){
+		if(execname()!="daemonsu" && execname() != "su" && execname() != "adbd"){
+            read_usage[pid(), uid(), gid(), execname()] += $count;
+            if(read_usage[pid(), uid(), gid(), execname()] > 81920){
+                ftrace(sprintf("DISK: %d %d %d true false %d %s", pid(), gid(), uid(), read_usage[pid(), uid(), gid(), execname()], execname()))
+				read_usage[pid(), uid(), gid(), execname()] = 0
+            }
+        }
+	}
+}
+
+probe vfs.write.return {
+	if($return > 1000){
+		if(execname()!="daemonsu" && execname() != "su" && execname() != "adbd"){
+            write_usage[pid(), uid(), gid(), execname()] += $count;
+            if(write_usage[pid(), uid(), gid(), execname()] > 81920){
+                ftrace(sprintf("DISK: %d %d %d true true %d %s", pid(), gid(), uid(), write_usage[pid(), uid(), gid(), execname()], execname()))
+				write_usage[pid(), uid(), gid(), execname()] = 0
+            }   
+        }
+	}
+}
+
+probe timer.ms(1000){	//flush disk usage info after a second
+	foreach (v = [pid,uid,gid,name] in read_usage){
+		ftrace(sprintf("DISK: %d %d %d false false %d %s", pid, gid, uid, v, name))
+		ftrace(sprintf("DISK: %d %d %d true false %d %s", pid, gid, uid, v, name))
+	}
+
+	foreach (v = [pid,uid,gid,name] in write_usage){
+        ftrace(sprintf("DISK: %d %d %d false true %d %s", pid, gid, uid, v, name))
+        ftrace(sprintf("DISK: %d %d %d true true %d %s", pid, gid, uid, v, name))
+    }
+
+	delete write_usage
+	delete read_usage
+}
+
+//------------------------------------------
+
+//------------------------GPU------------------------
+
+probe kernel.function("kgsl_pwrctrl_pwrlevel_change").return{
+	if($new_level < 7 && $new_level >= 0)
+		ftrace(sprintf ("GPULEVEL: %d",  $new_level))
+}
+
+probe kernel.function("kgsl_pwrctrl_enable"){
+    ftrace(sprintf ("GPUENABLED"))
+}
+
+probe kernel.function("kgsl_pwrctrl_disable"){
+    ftrace(sprintf ("GPUDISABLED"))
+}
+
+probe kernel.function("update_statistics"){
+    //utilization = $device->pwrctrl->clk_stats->elapsed_old<=0 ? 0 : ($device->pwrctrl->clk_stats->on_time_old*100)/$device->pwrctrl->clk_stats->elapsed_old
+    ftrace(sprintf("GPUUTIL %d %d",$device->pwrctrl->clk_stats->on_time_old,$device->pwrctrl->clk_stats->elapsed_old))
+}
+
+probe kernel.function("adreno_drawctxt_switch"){
+    if($drawctxt && $drawctxt->base->pid != lastpid){
+        lastpid = $drawctxt->base->pid;
+	task = pid2task($drawctxt->base->pid);
+	ftrace(sprintf("GPUCNTX %d %s",$drawctxt->base->pid, pid2execname($drawctxt->base->pid)))
+    }
+}
+//-------------------------- LCD---------------------------
+probe kernel.function("mdss_fb_set_bl_brightness"){
+	ftrace(sprintf ("DISPLAY: %d",$led_cdev->brightness))
+}
+//------------------------------
+
+probe end
+{
+	printf("Probing ended!\n")
+	delete context_switch_count
+}

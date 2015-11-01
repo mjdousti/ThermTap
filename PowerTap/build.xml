@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+
+  Copyright (C) 2015 Mohammad Javad Dousti, Majid Ghasemi-Gol, Mahdi Nazemi, 
+     and Massoud Pedram, SPORT lab, University of Southern California. All 
+     rights reserved.
+
+  Please refer to the LICENSE file for terms of use.
+
+-->
+<project basedir="." default="build" name="ThermTap">
+	<property environment="env"/>
+	
+    <path id="ThermTap.classpath">
+		<fileset dir="${basedir}/">
+			<include name="libs/**/*.jar"/>
+		</fileset>	
+    </path>
+	
+    <target name="init">
+        <copy includeemptydirs="false" todir=".">
+            <fileset dir=".">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete includeEmptyDirs="true" quiet="false">
+			<fileset dir="src" includes="**/*.class"/>
+		</delete>
+		<delete file="external-libs.jar"/>
+		<delete file="thermtap.jar" />
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="init,build-project,create_jar" name="build"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+		<javac debug="on" destdir="src" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="ThermTap.classpath"/>
+			<compilerarg line="-Xlint:unchecked -Xlint:deprecation"/>
+        </javac>
+    </target>
+	<target depends="build-project" name="create_jar">
+		<jar jarfile="external-libs.jar">
+			<zipgroupfileset dir="libs" includes="**/*.jar"/>
+			<zipgroupfileset dir="/usr/share/java" includes="jogl2.jar"/>
+			<zipgroupfileset dir="/usr/share/java" includes="gluegen2-rt.jar"/>
+		</jar>
+        <jar destfile="thermtap.jar">
+            <manifest>
+                <attribute name="Main-Class" value="edu.usc.thermtap.ThermTap"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./"/>
+            </manifest>
+			<fileset dir="src" includes="**/*.class"/>
+			<fileset dir="." includes="icons/**"/>
+			<zipfileset src="external-libs.jar" excludes="META-INF/**/*"/>
+		</jar>
+    </target>
+</project>
