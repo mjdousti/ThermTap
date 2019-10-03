@@ -1,20 +1,7 @@
 # ThermTap: An Online Power Analyzer and Thermal Simulator for Android Devices
 
-## Change Log
-```
-Version   |  Change
--------------------------------------------------------------
-1.00      |  Initial release.
-```
-
-## License
-Please refer to the [LICENSE](LICENSE) file.
-
-
 ## Description
 ThermTap enables system and software developers to monitor the power consumption and temperature of various hardware components in an Android device as a function of running applications and processes. It comprises of a power analyzer, called PowerTap, and an online thermal simulator, called Therminator 2. With accurate power macro-models, PowerTap collates activity profiles of major components of a portable device from the OS kernel device drivers in an event-driven manner to generate power traces. In turn, Therminator 2 reads these traces and, using a compact thermal model of the device, generates various temperature maps including those for the device components and device skin. Fast thermal simulation techniques enable Therminator 2 to be executed in realtime. With precise per-process and per-application temperature maps that ThermTap produces, it enables software and system developers to find thermal bugs in their software. 
-
-
 
 ## Directories & Files Structure
 ```
@@ -195,13 +182,16 @@ Please note that ThermTap is tuned to work with Google Nexus 5. If you want to p
 
 
 ## Developers
-* [Mohammad Javad Dousti](<dousti@usc.edu>)
-* [Majid Ghasemi-Gol](<ghasemig@usc.edu>)
-* [Mahdi Nazemi](<mnazemi@usc.edu>)
-* [Massoud Pedram](<pedram@usc.edu>)
+* Mohammad Javad Dousti (<dousti@usc.edu>)
+* Majid Ghasemi-Gol (<ghasemig@usc.edu>)
+* Mahdi Nazemi (<mnazemi@usc.edu>)
+* Massoud Pedram (<pedram@usc.edu>)
 
 ## Asking Questions or Reporting Bugs
-You may contact [Mohammad Javad Dousti](<dousti@usc.edu>) for any questions you may have or bugs that you find.
+You may contact Mohammad Javad Dousti (<dousti@usc.edu>) for any questions you may have or bugs that you find.
 
 ## Reference
 [1] M. J. Dousti, M. Ghasemi-Gol, M. Nazemi, and M. Pedram, "ThermTap: An Online Power Analyzer and Thermal Simulator for Android Devices," in *Proc. of International Symposium on Low Power Electronics and Design* (ISLPED), Jul. 2015.
+
+## License
+Please refer to the [LICENSE](LICENSE) file.
