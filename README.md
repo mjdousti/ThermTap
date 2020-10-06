@@ -191,7 +191,15 @@ Please note that ThermTap is tuned to work with Google Nexus 5. If you want to p
 You may contact Mohammad Javad Dousti (<dousti@usc.edu>) for any questions you may have or bugs that you find.
 
 ## Reference
-[1] M. J. Dousti, M. Ghasemi-Gol, M. Nazemi, and M. Pedram, "ThermTap: An Online Power Analyzer and Thermal Simulator for Android Devices," in *Proc. of International Symposium on Low Power Electronics and Design* (ISLPED), Jul. 2015.
+```bibtex
+@inproceedings{thermtap2015,
+  title = {ThermTap: An Online Power Analyzer and Thermal Simulator for Android Devices},
+  author = {Mohammad Javad Dousti, Majid Ghasemi-Gol, Mahdi Nazemi, Massoud Pedram},
+  booktitle = {Proceedings of International Symposium on Low Power Electronics and Design (ISLPED)},
+  month={July}
+  year = {2015},
+}
+```
 
 ## License
 Please refer to the [LICENSE](LICENSE) file.
